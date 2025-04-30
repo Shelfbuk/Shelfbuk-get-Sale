@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shelfbuk: Злови знижку</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(to bottom, #a2d4f5, #ffffff);
+      font-family: 'Arial', sans-serif;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background-color: #f9f9f9;
+      border: 2px solid #ccc;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #title {
+      text-align: center;
+      padding: 1rem;
+      font-size: 2rem;
+      color: #333;
+    }
+    #subtitle {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div id="title">🐾 Shelfbuk Електронні книги</div>
+  <div id="subtitle">Злови знижку!</div>
+  <canvas id="game" width="600" height="300"></canvas>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    let cat = { x: 50, y: 220, width: 40, height: 40, vy: 0, jumping: false };
+    let gravity = 1.2;
+    let obstacles = [];
+    let books = [];
+    let score = 0;
+
+    function drawCat() {
+      ctx.fillStyle = "#f08080";
+      ctx.fillRect(cat.x, cat.y, cat.width, cat.height);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(cat.x + 10, cat.y + 10, 5, 5); // очі
+    }
+
+    function drawObstacle(obs) {
+      ctx.fillStyle = "#8b8b8b";
+      ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+    }
+
+    function drawBook(book) {
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(book.x, book.y, book.width, book.height);
+    }
+
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Гравітація
+      cat.y += cat.vy;
+      cat.vy += gravity;
+      if (cat.y > 220) {
+        cat.y = 220;
+        cat.jumping = false;
+      }
+
+      drawCat();
+
+      // Перешкоди
+      obstacles.forEach((obs, i) => {
+        obs.x -= 4;
+        drawObstacle(obs);
+        if (cat.x < obs.x + obs.width && cat.x + cat.width > obs.x &&
+            cat.y < obs.y + obs.height && cat.y + cat.height > obs.y) {
+          alert("Ой! Ти зіткнувся з перешкодою 😿
+Твоя знижка: " + score + "%");
+          document.location.reload();
+        }
+      });
+
+      // Книжки
+      books.forEach((book, i) => {
+        book.x -= 3;
+        drawBook(book);
+        if (cat.x < book.x + book.width && cat.x + cat.width > book.x &&
+            cat.y < book.y + book.height && cat.y + cat.height > book.y) {
+          score += 5;
+          if (score > 30) score = 30;
+          books.splice(i, 1);
+        }
+      });
+
+      // Показ знижки
+      ctx.fillStyle = "#333";
+      ctx.font = "20px Arial";
+      ctx.fillText("Знижка: " + score + "%", 10, 25);
+    }
+
+    function spawnObstacle() {
+      obstacles.push({ x: 600, y: 240, width: 30, height: 30 });
+    }
+
+    function spawnBook() {
+      books.push({ x: 600, y: Math.random() * 200 + 20, width: 20, height: 20 });
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.code === "Space" && !cat.jumping) {
+        cat.vy = -15;
+        cat.jumping = true;
+      }
+    });
+
+    setInterval(update, 1000 / 30);
+    setInterval(spawnObstacle, 2000);
+    setInterval(spawnBook, 2500);
+  </script>
+</body>
+</html>
